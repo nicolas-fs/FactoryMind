@@ -1,0 +1,67 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: factorymind-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: factorymind
+      POSTGRES_PASSWORD: factorymind123
+      POSTGRES_DB: factorymind
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U factorymind -d factorymind"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  reranker:
+    build: ./services/reranker
+    container_name: factorymind-reranker
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  backend:
+    build: ./backend
+    container_name: factorymind-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://factorymind:factorymind123@db:5432/factorymind
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      MOCK_MODE: ${MOCK_MODE}
+      RERANK_ENABLED: ${RERANK_ENABLED}
+      RERANKER_URL: ${RERANKER_URL}
+      ACTIONS_ENABLED: ${ACTIONS_ENABLED}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      reranker:
+        condition: service_started   # Cambio clave: solo espera a que el contenedor arranque, no a que esté healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    container_name: factorymind-frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
