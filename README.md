@@ -10,6 +10,32 @@ Agente RAG para Pymes industriales que permite:
 - Backend: FastAPI, LangChain, OpenAI, pgvector
 - Base de datos: PostgreSQL + extensión pgvector
 
+# 🧠 FactoryMind — Agente RAG para Pymes Industriales
+
+FactoryMind es un asistente conversacional con IA que se entrena con los documentos internos de tu empresa (PDFs, TXT) y responde preguntas en español, citando la fuente y con un score de confianza.
+
+## ✨ Funcionalidades
+- Carga de documentos con generación de embeddings
+- Recuperación semántica con pgvector
+- Reranking con cross‑encoder
+- Score de confianza por respuesta
+- Agente multi‑paso (puede consultar stock, estado de pedidos)
+- Diseño responsive con Tailwind CSS
+
+## 🛠 Stack
+- Frontend: Next.js 14, Tailwind
+- Backend: FastAPI, Python
+- BD: PostgreSQL + pgvector
+- IA: OpenAI gpt-4o‑mini
+- Infra: Docker Compose
+
+## ⚡ Inicio rápido
+```bash
+git clone https://github.com/nicolas-fs/FactoryMind.git
+cd FactoryMind
+cp .env.example .env
+docker-compose up -d --build
+
 ## Instalación rápida
 
 ### 1. Clonar el repositorio
